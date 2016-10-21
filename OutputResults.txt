@@ -1,2 +1,0 @@
-ID	URL	WikipediaHeaders
-	http://www.moddb.com/games/half-life/mods		http://www.moddb.com/games/half-life/mods		http://www.moddb.com/games/half-life/mods	
