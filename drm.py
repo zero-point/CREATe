@@ -188,7 +188,7 @@ def drm(param,out,err):
         site = 'http://store.steampowered.com/app/'+param                                                                        ## Steam Web Scrape
 	rep_list = ["\\t","\\n","\\r","<br>","</br>","<div>","</div>",",","[u''","[u'","u''","'']","']","\\xa0"]
 
-        try:
+	try:
 		cookies = {'birthtime': '568022401'}
 		scraper = cfscrape.create_scraper()  # returns a CloudflareScraper instance
 		content = scraper.get(site,cookies=cookies).content # reads content
@@ -230,7 +230,7 @@ def drm(param,out,err):
 					drm = str(info[0])
 					for rep in rep_list:	
 						drm = drm.replace(rep,"")
-					eula = str(info[1].find("a").contents[0])
+					eula = sanitisedName(info[1].find("a").contents[0])
 					link = str(info[1].find("a")['href'])
 					printout += ", " + drm + ", " + eula + ", " + link + "\n"
 				else:	
@@ -240,33 +240,23 @@ def drm(param,out,err):
 							drm = drm.replace(rep,"")						
 					printout += ", " + drm + ", None, None" + "\n"
 			else:
-	#			info = cs
-	#			drm = str(info[0])
-	#			for rep in rep_list:	
-	#				drm = drm.replace(rep,"")
-	#			eula = str(info[0].find("a").contents[0])
-	#			link = str(info[0].find("a")['href'])
-	#			printout += ", " + drm + ", " + eula + ", " + link + "\n"
-
 				drm = str(cs[0].contents)
 				for rep in rep_list:
 					if rep in drm:	
 						drm = drm.replace(rep,"")
 				printout += ", " + drm + ", None, None" + "\n"
-	#			err.write(printout+"\n")
-	#			print(cs)
-	#			return
 			print(printout)
 			out.write(printout)
 		elif len(cs)>2:
 			err.write(printout + "\n")
 	except:
+		print("error: " + param)
 		err.write(param + '\n')
 	return printout
 
 ## main
 
-out = open('drm_output2.csv', 'w')
+out = open('drm_output.csv', 'w')
 err = open('drm_output_err.txt','w')#_output_errors.txt','w')
 with open('input.txt') as f:
     content = f.readlines()
@@ -277,7 +267,7 @@ out.write("AppID, DRM, EULA, Link\n\n")
 for i in content:
 	if(int(i[:6])):#>317730)):
 		drm(str(i[:6]),out,err)
-#drm("264000",out,err)
+#drm("317730",out,err)
 print "Finished."
 out.close()
 err.close()
