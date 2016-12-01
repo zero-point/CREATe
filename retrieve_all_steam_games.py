@@ -10,7 +10,7 @@ out = open('all_games.txt', 'w') # name id
 with open('GetAppList.json', 'r') as f:
      js = json.load(f)
 
-no_of_oops = 0
+no_of_errors = 0
 for i in js.keys():
 	for j in js[i]:
 		for x in js[i][j]:
@@ -23,11 +23,11 @@ for i in js.keys():
 							out.write(i)
 						except(UnicodeEncodeError):
 							print "oops"
-							no_of_oops += 1
+							no_of_errors += 1
 				out.write(" ")
 				print y['appid']
 				out.write(str(y['appid']))
 				out.write('\n')
 
 out.close()
-print no_of_oops
+print no_of_errors
