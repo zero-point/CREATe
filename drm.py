@@ -12,11 +12,13 @@ import urllib2
 import json
 import cfscrape
 import requests
+
 def resolve_redirects(url,count):
-	print "Attempts: " + str(count)
-    	try:
-        	return urllib2.urlopen(url).geturl()
-    	except:
+
+	print("Attempts: " + str(count))
+	try:
+		return urllib2.urlopen(url).geturl()
+	except:
         	time.sleep(5);
         	return resolve_redirects(url,count)
 
@@ -37,7 +39,7 @@ def checkDate(date):
 
 def steamspy(param,printout,p):
         d = defaultdict(dict)
-        print "Checking SteamSpy ..."
+        print ("Checking SteamSpy ...")
         site = 'http://steamspy.com/api.php?request=appdetails&appid='+param                                            ## SteamSpy scrape
         try:
                 scraper = cfscrape.create_scraper()  # returns a CloudflareScraper instance
@@ -56,7 +58,7 @@ def steamspy(param,printout,p):
                 content = scraper.get(site).content # reads content
                 soup = BeautifulSoup(content, 'html.parser')
         except:
-                print "ErrorSteamSpy: " + param
+                print ("ErrorSteamSpy: " + param)
                 p.write("ErrorSteamSpy: " + param + "\n")
 
         return printout
@@ -67,12 +69,12 @@ def sanitisedName(name):
 		try:
 			sname += str(i)
 		except(UnicodeEncodeError):
-			print "Improper Character: " + i
+			print ("Improper Character: " + i)
 
 	return sname
 def steamdb(param,printout,err):
         site = 'https://steamdb.info/app/'+param                                                                        ## Steam DB
-        print "Checking SteamDB ..."
+        print ("Checking SteamDB ...")
 
         price = 0
         lowest = 0
@@ -104,7 +106,7 @@ def steamdb(param,printout,err):
                 else:
                         lowest = 0
         except:
-                print "ErrorSteamdb: " + param
+                print ("ErrorSteamdb: " + param)
                 err.write("ErrorSteamdb: " + param+"\n")
 	
 	printout += ", " + "{0:.2f}".format(price)								# full price
@@ -114,12 +116,12 @@ def steamdb(param,printout,err):
 
 def api(param,rel,p):
 	printout = ""	 												# appid
-	print "AppID: " + param
+	print ("AppID: " + param)
 	fileout = ""
 	early = False
 	ok = True
 
-	print "Checking Steam ..."
+	print ("Checking Steam ...")
 	page = urllib2.urlopen(resolve_redirects('http://store.steampowered.com/api/appdetails?appids='+param,1))		## Steam API
 	js = json.load(page)
 
@@ -127,7 +129,7 @@ def api(param,rel,p):
 		if(js[i]['success']==True):
 			x = js[i]['data']
 			if('game' in str(x['type']) and 'release_date' in x.keys() and checkDate(str(x['release_date']['date']))):
-				print "Success: valid game, data accessed"
+				print ("Success: valid game, data accessed")
 				printout += param
 				try:
 					try:	
@@ -153,7 +155,7 @@ def api(param,rel,p):
 						if(x['metacritic']):
 							printout += ", " + str(x['metacritic']['score']) 			# avg critic
 					except(KeyError):
-						print 'No Metacritic Score'
+						print ('No Metacritic Score')
 						printout += ", None"
 
 					printout = steamspy(param,printout,p)
@@ -171,20 +173,20 @@ def api(param,rel,p):
 		else:
 			printout += "\n"
 			fileout = printout
-		print "Printout: " + printout
+		print ("Printout: " + printout)
 		rel.write(fileout)
 	return 'Done'
 
 def drm(param,out,err):
 	printout = "" + param	 												
-	print "AppID: " + param
+	print ("AppID: " + param)
 	fileout = ""
 	ok = True
 	eula = ""
 	drm = ""
 	link = ""
 
-	print "Checking Steam for DRM info ..."
+	print ("Checking Steam for DRM info ...")
         site = 'http://store.steampowered.com/app/'+param                                                                        ## Steam Web Scrape
 	rep_list = ["\\t","\\n","\\r","<br>","</br>","<div>","</div>",",","[u''","[u'","u''","'']","']","\\xa0"]
 
@@ -230,7 +232,7 @@ def drm(param,out,err):
 					drm = str(info[0])
 					for rep in rep_list:	
 						drm = drm.replace(rep,"")
-					eula = sanitisedName(info[1].find("a").contents[0])
+					eula = (info[1].find("a").contents[0]).encode('utf-8')
 					link = str(info[1].find("a")['href'])
 					printout += ", " + drm + ", " + eula + ", " + link + "\n"
 				else:	
@@ -255,9 +257,8 @@ def drm(param,out,err):
 	return printout
 
 ## main
-
 out = open('drm_output.csv', 'w')
-err = open('drm_output_err.txt','w')#_output_errors.txt','w')
+err = open('drm_output_err.txt','w')
 with open('input.txt') as f:
     content = f.readlines()
 
@@ -265,9 +266,10 @@ print "Starting ...\n"
 out.write("AppID, DRM, EULA, Link\n\n")
 
 for i in content:
-	if(int(i[:6])):#>317730)):
+	if(int(i[:6])):
 		drm(str(i[:6]),out,err)
-#drm("317730",out,err)
+
 print "Finished."
 out.close()
 err.close()
+
